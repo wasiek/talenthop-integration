@@ -1,0 +1,84 @@
+package com.github.dziki.talenthop.service;
+
+import com.github.dziki.talenthop.dto.IntegrationSourceRequest;
+import com.github.dziki.talenthop.dto.IntegrationSourceResponse;
+import com.github.dziki.talenthop.model.IntegrationSource;
+import com.github.dziki.talenthop.repository.IntegrationSourceRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class IntegrationSourceService {
+
+    private final IntegrationSourceRepository repository;
+
+    @Transactional
+    public IntegrationSourceResponse create(IntegrationSourceRequest request) {
+        if (repository.existsByName(request.getName())) {
+            throw new IllegalArgumentException("Source with name '" + request.getName() + "' already exists");
+        }
+
+        IntegrationSource source = IntegrationSource.builder()
+                .name(request.getName())
+                .type(request.getType())
+                .endpoint(request.getEndpoint())
+                .apiKey(request.getApiKey())
+                .isActive(request.getIsActive() != null ? request.getIsActive() : true)
+                .build();
+
+        IntegrationSource saved = repository.save(source);
+        log.info("Created integration source: {} ({})", saved.getName(), saved.getId());
+        return IntegrationSourceResponse.fromEntity(saved);
+    }
+
+    public List<IntegrationSourceResponse> findAll() {
+        return repository.findAll().stream()
+                .map(IntegrationSourceResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public IntegrationSourceResponse findById(Long id) {
+        IntegrationSource source = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Source not found: " + id));
+        return IntegrationSourceResponse.fromEntity(source);
+    }
+
+    public IntegrationSourceResponse findByName(String name) {
+        IntegrationSource source = repository.findByName(name)
+                .orElseThrow(() -> new IllegalArgumentException("Source not found: " + name));
+        return IntegrationSourceResponse.fromEntity(source);
+    }
+
+    @Transactional
+    public IntegrationSourceResponse update(Long id, IntegrationSourceRequest request) {
+        IntegrationSource source = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Source not found: " + id));
+
+        source.setName(request.getName());
+        source.setType(request.getType());
+        source.setEndpoint(request.getEndpoint());
+        source.setApiKey(request.getApiKey());
+        if (request.getIsActive() != null) {
+            source.setIsActive(request.getIsActive());
+        }
+
+        IntegrationSource updated = repository.save(source);
+        log.info("Updated integration source: {} ({})", updated.getName(), updated.getId());
+        return IntegrationSourceResponse.fromEntity(updated);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        IntegrationSource source = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Source not found: " + id));
+        repository.delete(source);
+        log.info("Deleted integration source: {} ({})", source.getName(), id);
+    }
+}
