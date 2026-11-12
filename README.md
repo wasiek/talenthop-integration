@@ -4,153 +4,145 @@ AI-powered security operations integration platform built with Spring Boot 3.4 a
 
 ## Features
 
-- **Integration Source Management** — CRUD API for security data sources (SIEM, firewall, endpoint, cloud)
-- **Security Event Processing** — Ingest, store, and query security events from multiple sources
-- **Event Transformation** — Pipeline-based data normalization and enrichment
-- **Kafka Integration** — Async event processing via Kafka
-- **REST API** — Clean, versioned REST endpoints
-- **GraalVM Native Image** — Optimized for fast startup and low memory footprint
+- **Integration Source Management** - CRUD for security data sources (SIEM, Firewall, Cloud, Endpoint)
+- **Security Event Processing** - Ingest, query, and filter security events
+- **Transformation Pipelines** - Define and manage data transformation pipelines
+- **Kafka Integration** - Event-driven architecture with Apache Kafka
+- **REST API** - Clean, well-documented REST endpoints
+- **Swagger UI** - Interactive API documentation at `/swagger-ui.html`
+- **Docker** - Multi-stage Docker build + docker-compose (app + PostgreSQL + Kafka)
+- **GraalVM Native Image** - Ready for native compilation
+- **H2 / PostgreSQL** - H2 for dev, PostgreSQL for production
+- **Validation** - Bean Validation with proper error handling
+- **Global Exception Handling** - Clean error responses
 
 ## Tech Stack
 
-- **Java 21**
-- **Spring Boot 3.4.1**
-- **Spring Data JPA**
-- **Kafka**
-- **PostgreSQL** (production) / **H2** (dev/test)
-- **Lombok**
-- **GraalVM Native Image**
+| Component | Technology |
+|-----------|-----------|
+| Language | Java 21 |
+| Framework | Spring Boot 3.4.1 |
+| Database | H2 (dev) / PostgreSQL (prod) |
+| ORM | Spring Data JPA / Hibernate |
+| Messaging | Apache Kafka |
+| API Docs | SpringDoc OpenAPI (Swagger) |
+| Build | Maven |
+| Container | Docker (multi-stage) |
+| CI/CD | GitHub Actions |
+| Native | GraalVM Native Image (ready) |
 
 ## Getting Started
 
 ### Prerequisites
-
 - Java 21+
 - Maven 3.8+
-- Docker (optional, for PostgreSQL and Kafka)
+- Docker (optional, for full stack)
 
-### Build
-
-```bash
-mvn clean install
-```
-
-### Run (development)
-
+### Run with H2 (dev)
 ```bash
 mvn spring-boot:run
 ```
 
-The application will start on `http://localhost:8080` with an in-memory H2 database.
+API available at: `http://localhost:8095`
+Swagger UI: `http://localhost:8095/swagger-ui.html`
+H2 Console: `http://localhost:8095/h2-console`
 
-### Run (production)
-
+### Run with Docker Compose (full stack)
 ```bash
-# Set environment variables for PostgreSQL
-export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/talenthop
-export SPRING_DATASOURCE_USERNAME=talenthop
-export SPRING_DATASOURCE_PASSWORD=talenthop
-
-mvn spring-boot:run
+docker compose up --build
 ```
 
-### Build Native Image (GraalVM)
+This starts:
+- App on port 8095
+- PostgreSQL on port 5432
+- Kafka on port 9092
 
+### Run Tests
 ```bash
-# Install GraalVM Native Image
-sudo apt install graalvm-native-image
+mvn test
+```
 
-# Build native executable
+### Build JAR
+```bash
+mvn clean package -DskipTests
+```
+
+### Build Native Image (requires GraalVM)
+```bash
 mvn native:compile
-
-# Run native executable
-./target/talenthop-integration
 ```
 
 ## API Endpoints
 
 ### Integration Sources
-
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/v1/sources` | Create a new integration source |
+| POST | `/api/v1/sources` | Create integration source |
 | GET | `/api/v1/sources` | List all sources |
 | GET | `/api/v1/sources/{id}` | Get source by ID |
-| GET | `/api/v1/sources/name/{name}` | Get source by name |
-| PUT | `/api/v1/sources/{id}` | Update a source |
-| DELETE | `/api/v1/sources/{id}` | Delete a source |
+| PUT | `/api/v1/sources/{id}` | Update source |
+| DELETE | `/api/v1/sources/{id}` | Delete source |
 
 ### Security Events
-
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/events` | List all events |
-| GET | `/api/v1/events/source/{sourceId}` | Get unprocessed events by source |
-| GET | `/api/v1/events/severity/{severity}` | Get unprocessed events by severity |
-| GET | `/api/v1/events/unprocessed?since={timestamp}` | Get unprocessed events since timestamp |
-| GET | `/api/v1/events/stats` | Get event statistics |
-| PATCH | `/api/v1/events/{id}/process` | Mark event as processed |
+| POST | `/api/v1/events` | Ingest security event |
+| GET | `/api/v1/events` | List events (filterable) |
+| GET | `/api/v1/events/{id}` | Get event by ID |
 
-## Example Requests
-
-### Create Integration Source
-
-```bash
-curl -X POST http://localhost:8080/api/v1/sources \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Splunk SIEM",
-    "type": "SIEM",
-    "endpoint": "https://splunk.example.com",
-    "apiKey": "your-api-key"
-  }'
-```
-
-### Get Event Stats
-
-```bash
-curl http://localhost:8080/api/v1/events/stats
-```
-
-Response:
-```json
-{
-  "totalEvents": 150,
-  "criticalEvents": 5,
-  "highEvents": 20,
-  "mediumEvents": 45,
-  "lowEvents": 80
-}
-```
+### Pipelines
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/pipelines` | Create pipeline |
+| GET | `/api/v1/pipelines` | List all pipelines |
+| GET | `/api/v1/pipelines/{id}` | Get pipeline by ID |
 
 ## Project Structure
 
 ```
 src/main/java/com/github/dziki/talenthop/
-├── TalentHopIntegrationApplication.java    # Main application class
+├── TalentHopIntegrationApplication.java  # Main class
 ├── config/
-│   └── JpaConfig.java                      # JPA auditing configuration
+│   ├── JpaConfig.java                    # JPA configuration
+│   └── OpenApiConfig.java                # Swagger/OpenAPI config
 ├── controller/
-│   ├── IntegrationSourceController.java    # REST API for sources
-│   └── SecurityEventController.java        # REST API for events
+│   ├── IntegrationSourceController.java  # Source CRUD
+│   └── SecurityEventController.java      # Event endpoints
 ├── dto/
-│   ├── IntegrationSourceRequest.java       # Request DTO
-│   ├── IntegrationSourceResponse.java      # Response DTO
-│   └── SecurityEventResponse.java          # Response DTO
+│   ├── IntegrationSourceRequest.java     # Create/Update request
+│   ├── IntegrationSourceResponse.java    # Response DTO
+│   └── SecurityEventResponse.java        # Event response
 ├── exception/
-│   └── GlobalExceptionHandler.java         # Global exception handling
+│   └── GlobalExceptionHandler.java       # Global error handling
 ├── model/
-│   ├── IntegrationSource.java              # JPA entity
-│   ├── IntegrationPipeline.java            # JPA entity
-│   └── SecurityEvent.java                  # JPA entity
+│   ├── IntegrationSource.java            # Source entity
+│   ├── IntegrationPipeline.java          # Pipeline entity
+│   └── SecurityEvent.java                # Event entity
 ├── repository/
-│   ├── IntegrationSourceRepository.java    # Spring Data JPA
-│   ├── IntegrationPipelineRepository.java  # Spring Data JPA
-│   └── SecurityEventRepository.java        # Spring Data JPA
+│   ├── IntegrationSourceRepository.java
+│   ├── IntegrationPipelineRepository.java
+│   └── SecurityEventRepository.java
 └── service/
-    ├── IntegrationSourceService.java       # Business logic
-    └── SecurityEventService.java           # Business logic
+    ├── IntegrationSourceService.java
+    └── SecurityEventService.java
 ```
+
+## Configuration
+
+| Profile | Database | Kafka | Port |
+|---------|----------|-------|------|
+| default (dev) | H2 in-memory | localhost:9092 | 8095 |
+| prod | PostgreSQL | configurable | 8095 |
+
+### Environment Variables (prod)
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DB_HOST` | localhost | PostgreSQL host |
+| `DB_PORT` | 5432 | PostgreSQL port |
+| `DB_NAME` | talenthop | Database name |
+| `DB_USER` | talenthop | Database user |
+| `DB_PASSWORD` | talenthop | Database password |
+| `KAFKA_BOOTSTRAP_SERVERS` | kafka:29092 | Kafka bootstrap servers |
 
 ## License
 
