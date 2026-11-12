@@ -108,6 +108,37 @@
                 <version>0.10.2</version>
                 <extensions>true</extensions>
             </plugin>
+
+            <!-- PIT Mutation Testing -->
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>1.16.1</version>
+                <configuration>
+                    <targetClasses>
+                        <param>com.github.dziki.talenthop.service.*</param>
+                        <param>com.github.dziki.talenthop.controller.*</param>
+                    </targetClasses>
+                    <targetTests>
+                        <param>com.github.dziki.talenthop.*Test</param>
+                    </targetTests>
+                    <mutators>
+                        <param>STRONGER</param>
+                    </mutators>
+                    <outputFormats>
+                        <param>XML</param>
+                        <param>HTML</param>
+                    </outputFormats>
+                    <timestampedReports>false</timestampedReports>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-junit5-plugin</artifactId>
+                        <version>1.2.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
 </project>

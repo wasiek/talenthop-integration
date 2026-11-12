@@ -109,6 +109,68 @@ class IntegrationSourceControllerTest {
     }
 
     @Test
+    void updateSource() throws Exception {
+        IntegrationSource source = IntegrationSource.builder()
+                .name("OldName")
+                .type("SIEM")
+                .endpoint("https://old.example.com")
+                .build();
+        source = sourceRepository.save(source);
+
+        IntegrationSourceRequest request = IntegrationSourceRequest.builder()
+                .name("NewName")
+                .type("FIREWALL")
+                .endpoint("https://new.example.com")
+                .apiKey("new-key")
+                .build();
+
+        mockMvc.perform(put("/api/v1/sources/" + source.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(com.fasterxml.jackson.databind.json.JsonMapper.builder().build().writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("NewName"))
+                .andExpect(jsonPath("$.type").value("FIREWALL"))
+                .andExpect(jsonPath("$.endpoint").value("https://new.example.com"));
+    }
+
+    @Test
+    void updateSource_notFound() throws Exception {
+        IntegrationSourceRequest request = IntegrationSourceRequest.builder()
+                .name("NewName")
+                .type("SIEM")
+                .endpoint("https://new.example.com")
+                .build();
+
+        mockMvc.perform(put("/api/v1/sources/999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(com.fasterxml.jackson.databind.json.JsonMapper.builder().build().writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Source not found: 999"));
+    }
+
+    @Test
+    void findSourceByName() throws Exception {
+        IntegrationSource source = IntegrationSource.builder()
+                .name("UniqueName")
+                .type("ENDPOINT")
+                .endpoint("https://ep.example.com")
+                .build();
+        sourceRepository.save(source);
+
+        mockMvc.perform(get("/api/v1/sources/name/UniqueName"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("UniqueName"))
+                .andExpect(jsonPath("$.type").value("ENDPOINT"));
+    }
+
+    @Test
+    void findSourceByName_notFound() throws Exception {
+        mockMvc.perform(get("/api/v1/sources/name/NonExistent"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Source not found: NonExistent"));
+    }
+
+    @Test
     void deleteSource() throws Exception {
         IntegrationSource source = IntegrationSource.builder()
                 .name("ToDelete")
@@ -122,5 +184,12 @@ class IntegrationSourceControllerTest {
 
         mockMvc.perform(get("/api/v1/sources/" + source.getId()))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void deleteSource_notFound() throws Exception {
+        mockMvc.perform(delete("/api/v1/sources/999"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Source not found: 999"));
     }
 }
