@@ -12,6 +12,8 @@ import java.time.Instant;
 @Entity
 @Table(name = "integration_pipelines")
 @EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -34,27 +36,8 @@ public class IntegrationPipeline {
         return source;
     }
 
-    public void setSource(IntegrationSource source) {
-        this.source = source;
-    }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getTransformation() { return transformation; }
-    public void setTransformation(String transformation) { this.transformation = transformation; }
-    public Boolean getIsActive() { return isActive; }
-    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
-    public Instant getLastRunAt() { return lastRunAt; }
-    public void setLastRunAt(Instant lastRunAt) { this.lastRunAt = lastRunAt; }
-    public String getLastStatus() { return lastStatus; }
-    public void setLastStatus(String lastStatus) { this.lastStatus = lastStatus; }
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
-
     @Column(nullable = false)
-    private String transformation; // JSON transformation rules
+    private String transformation;
 
     @Column(name = "is_active")
     @Builder.Default
@@ -64,7 +47,7 @@ public class IntegrationPipeline {
     private Instant lastRunAt;
 
     @Column(name = "last_status")
-    private String lastStatus; // e.g., "SUCCESS", "FAILED"
+    private String lastStatus;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

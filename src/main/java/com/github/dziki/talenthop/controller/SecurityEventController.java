@@ -29,7 +29,12 @@ public class SecurityEventController {
     }
 
     @GetMapping("/source/{sourceId}")
-    public ResponseEntity<List<SecurityEventResponse>> findBySource(@PathVariable Long sourceId) {
+    public ResponseEntity<List<SecurityEventResponse>> findBySource(
+            @PathVariable Long sourceId,
+            @RequestParam(defaultValue = "false") boolean includeProcessed) {
+        if (includeProcessed) {
+            return ResponseEntity.ok(service.findAllBySourceId(sourceId));
+        }
         return ResponseEntity.ok(service.findBySourceId(sourceId));
     }
 

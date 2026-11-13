@@ -66,6 +66,13 @@ public class IntegrationSourceService {
         IntegrationSource source = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Source not found: " + id));
 
+        // Check for duplicate name (excluding current source)
+        repository.findByName(request.getName())
+                .filter(existing -> !existing.getId().equals(id))
+                .ifPresent(existing -> {
+                    throw new IllegalArgumentException("Source with name '" + request.getName() + "' already exists");
+                });
+
         source.setName(request.getName());
         source.setType(request.getType());
         source.setEndpoint(request.getEndpoint());

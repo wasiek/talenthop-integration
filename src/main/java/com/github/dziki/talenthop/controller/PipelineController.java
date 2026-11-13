@@ -1,14 +1,12 @@
 package com.github.dziki.talenthop.controller;
 
-import com.github.dziki.talenthop.model.IntegrationPipeline;
-import com.github.dziki.talenthop.model.IntegrationSource;
-import com.github.dziki.talenthop.repository.IntegrationPipelineRepository;
-import com.github.dziki.talenthop.repository.IntegrationSourceRepository;
-import lombok.Data;
+import com.github.dziki.talenthop.dto.PipelineRequest;
+import com.github.dziki.talenthop.dto.PipelineResponse;
+import com.github.dziki.talenthop.service.PipelineService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,55 +16,27 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PipelineController {
 
-    private final IntegrationPipelineRepository pipelineRepository;
-    private final IntegrationSourceRepository sourceRepository;
-
-    @Data
-    public static class PipelineRequest {
-        private String name;
-        private Long sourceId;
-        private String transformation;
-    }
+    private final PipelineService service;
 
     @PostMapping
-    @Transactional
-    public ResponseEntity<IntegrationPipeline> create(@RequestBody PipelineRequest request) {
-        if (pipelineRepository.existsByName(request.getName())) {
-            throw new IllegalArgumentException("Pipeline with name '" + request.getName() + "' already exists");
-        }
-        IntegrationSource source = sourceRepository.findById(request.getSourceId())
-                .orElseThrow(() -> new IllegalArgumentException("Source not found: " + request.getSourceId()));
-
-        IntegrationPipeline pipeline = IntegrationPipeline.builder()
-                .name(request.getName())
-                .source(source)
-                .transformation(request.getTransformation())
-                .build();
-
-        IntegrationPipeline saved = pipelineRepository.save(pipeline);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    public ResponseEntity<PipelineResponse> create(@Valid @RequestBody PipelineRequest request) {
+        PipelineResponse response = service.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
-    @Transactional(readOnly = true)
-    public ResponseEntity<List<IntegrationPipeline>> findAll() {
-        return ResponseEntity.ok(pipelineRepository.findAll());
+    public ResponseEntity<List<PipelineResponse>> findAll() {
+        return ResponseEntity.ok(service.findAll());
     }
 
     @GetMapping("/{id}")
-    @Transactional(readOnly = true)
-    public ResponseEntity<IntegrationPipeline> findById(@PathVariable Long id) {
-        IntegrationPipeline pipeline = pipelineRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + id));
-        return ResponseEntity.ok(pipeline);
+    public ResponseEntity<PipelineResponse> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @DeleteMapping("/{id}")
-    @Transactional
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        IntegrationPipeline pipeline = pipelineRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + id));
-        pipelineRepository.delete(pipeline);
+        service.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

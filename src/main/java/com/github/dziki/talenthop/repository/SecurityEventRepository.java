@@ -12,6 +12,7 @@ import java.util.List;
 @Repository
 public interface SecurityEventRepository extends JpaRepository<SecurityEvent, Long> {
 
+    List<SecurityEvent> findBySourceId(Long sourceId);
     List<SecurityEvent> findBySourceIdAndIsProcessedFalse(Long sourceId);
 
     List<SecurityEvent> findBySeverityAndIsProcessedFalse(String severity);

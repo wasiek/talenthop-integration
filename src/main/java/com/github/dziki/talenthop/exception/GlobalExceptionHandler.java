@@ -65,5 +65,3 @@ public class GlobalExceptionHandler {
         ));
     }
 }
-
-// We need to add this import and handler

@@ -1,6 +1,7 @@
 package com.github.dziki.talenthop.service;
 
 import com.github.dziki.talenthop.dto.SecurityEventResponse;
+import com.github.dziki.talenthop.kafka.SecurityEventKafkaProducer;
 import com.github.dziki.talenthop.model.IntegrationSource;
 import com.github.dziki.talenthop.model.SecurityEvent;
 import com.github.dziki.talenthop.repository.SecurityEventRepository;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class SecurityEventService {
 
     private final SecurityEventRepository repository;
+    private final SecurityEventKafkaProducer kafkaProducer;
 
     @Transactional
     public SecurityEventResponse create(SecurityEvent event) {
@@ -37,6 +39,13 @@ public class SecurityEventService {
     @Transactional(readOnly = true)
     public List<SecurityEventResponse> findBySourceId(Long sourceId) {
         return repository.findBySourceIdAndIsProcessedFalse(sourceId).stream()
+                .map(SecurityEventResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<SecurityEventResponse> findAllBySourceId(Long sourceId) {
+        return repository.findBySourceId(sourceId).stream()
                 .map(SecurityEventResponse::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -78,5 +87,7 @@ public class SecurityEventService {
         event.setProcessedAt(Instant.now());
         repository.save(event);
         log.debug("Marked event as processed: {}", id);
+
+        kafkaProducer.publishEventProcessed(id, event.getEventType(), event.getSeverity());
     }
 }
