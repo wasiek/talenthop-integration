@@ -1,17 +1,21 @@
 package com.github.dziki.talenthop.controller;
 
+import com.github.dziki.talenthop.dto.SecurityEventRequest;
 import com.github.dziki.talenthop.dto.SecurityEventResponse;
 import com.github.dziki.talenthop.service.SecurityEventService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +25,12 @@ import java.util.Map;
 public class SecurityEventController {
 
     private final SecurityEventService service;
+
+    @PostMapping
+    public ResponseEntity<SecurityEventResponse> create(@Valid @RequestBody SecurityEventRequest request) {
+        SecurityEventResponse response = service.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 
     @GetMapping
     public ResponseEntity<Page<SecurityEventResponse>> findAll(
@@ -52,7 +62,7 @@ public class SecurityEventController {
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> getStats() {
         Map<String, Long> bySeverity = service.countBySeverityGrouped();
-        Map<String, Object> stats = new java.util.HashMap<>();
+        Map<String, Object> stats = new HashMap<>();
         stats.put("totalEvents", service.countAll());
         stats.put("criticalEvents", bySeverity.getOrDefault("CRITICAL", 0L));
         stats.put("highEvents", bySeverity.getOrDefault("HIGH", 0L));

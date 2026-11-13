@@ -1,10 +1,12 @@
 package com.github.dziki.talenthop.service;
 
+import com.github.dziki.talenthop.dto.SecurityEventRequest;
 import com.github.dziki.talenthop.dto.SecurityEventResponse;
 import com.github.dziki.talenthop.exception.ResourceNotFoundException;
 import com.github.dziki.talenthop.kafka.SecurityEventKafkaProducer;
 import com.github.dziki.talenthop.model.IntegrationSource;
 import com.github.dziki.talenthop.model.SecurityEvent;
+import com.github.dziki.talenthop.repository.IntegrationSourceRepository;
 import com.github.dziki.talenthop.repository.SecurityEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,12 +27,26 @@ import java.util.stream.Collectors;
 public class SecurityEventService {
 
     private final SecurityEventRepository repository;
+    private final IntegrationSourceRepository sourceRepository;
     private final SecurityEventKafkaProducer kafkaProducer;
 
     @Transactional
-    public SecurityEventResponse create(SecurityEvent event) {
+    public SecurityEventResponse create(SecurityEventRequest request) {
+        IntegrationSource source = sourceRepository.findById(request.getSourceId())
+                .orElseThrow(() -> new ResourceNotFoundException("Source", request.getSourceId()));
+
+        SecurityEvent event = SecurityEvent.builder()
+                .source(source)
+                .eventType(request.getEventType())
+                .severity(request.getSeverity())
+                .payload(request.getPayload())
+                .sourceIp(request.getSourceIp())
+                .destinationIp(request.getDestinationIp())
+                .username(request.getUsername())
+                .build();
+
         SecurityEvent saved = repository.save(event);
-        log.debug("Created security event: {} ({})", saved.getEventType(), saved.getId());
+        log.info("Created security event: {} ({}) from source {}", saved.getEventType(), saved.getId(), source.getName());
         return SecurityEventResponse.fromEntity(saved);
     }
 
@@ -83,9 +100,9 @@ public class SecurityEventService {
 
     @Transactional(readOnly = true)
     public Map<String, Long> countBySeverityGrouped() {
-        Map<String, Long> result = new java.util.HashMap<>();
-        for (Object[] row : repository.countGroupBySeverity()) {
-            result.put((String) row[0], (Long) row[1]);
+        Map<String, Long> result = new HashMap<>();
+        for (SecurityEventRepository.SeverityCount row : repository.countGroupBySeverity()) {
+            result.put(row.getSeverity(), row.getCount());
         }
         return result;
     }

@@ -97,8 +97,8 @@ class IntegrationSourceControllerTest {
 
         mockMvc.perform(get("/api/v1/sources"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("Source1"))
-                .andExpect(jsonPath("$[0].type").value("FIREWALL"));
+                .andExpect(jsonPath("$.content[0].name").value("Source1"))
+                .andExpect(jsonPath("$.content[0].type").value("FIREWALL"));
     }
 
     @Test

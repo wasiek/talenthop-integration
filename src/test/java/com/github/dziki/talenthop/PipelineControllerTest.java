@@ -96,7 +96,7 @@ class PipelineControllerTest {
 
         mockMvc.perform(get("/api/v1/pipelines"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("find-me"));
+                .andExpect(jsonPath("$.content[0].name").value("find-me"));
     }
 
     @Test

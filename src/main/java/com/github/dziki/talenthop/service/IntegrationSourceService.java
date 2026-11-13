@@ -8,6 +8,8 @@ import com.github.dziki.talenthop.repository.IntegrationSourceRepository;
 import com.github.dziki.talenthop.repository.SecurityEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,10 +44,8 @@ public class IntegrationSourceService {
     }
 
     @Transactional(readOnly = true)
-    public List<IntegrationSourceResponse> findAll() {
-        return repository.findAll().stream()
-                .map(IntegrationSourceResponse::fromEntity)
-                .collect(Collectors.toList());
+    public Page<IntegrationSourceResponse> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(IntegrationSourceResponse::fromEntity);
     }
 
     @Transactional(readOnly = true)
@@ -82,9 +82,8 @@ public class IntegrationSourceService {
             source.setIsActive(request.getIsActive());
         }
 
-        IntegrationSource updated = repository.save(source);
-        log.info("Updated integration source: {} ({})", updated.getName(), updated.getId());
-        return IntegrationSourceResponse.fromEntity(updated);
+        log.info("Updated integration source: {} ({})", source.getName(), source.getId());
+        return IntegrationSourceResponse.fromEntity(source);
     }
 
     @Transactional

@@ -9,6 +9,8 @@ import com.github.dziki.talenthop.repository.IntegrationPipelineRepository;
 import com.github.dziki.talenthop.repository.IntegrationSourceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,10 +46,8 @@ public class PipelineService {
     }
 
     @Transactional(readOnly = true)
-    public List<PipelineResponse> findAll() {
-        return pipelineRepository.findAll().stream()
-                .map(PipelineResponse::fromEntity)
-                .collect(Collectors.toList());
+    public Page<PipelineResponse> findAll(Pageable pageable) {
+        return pipelineRepository.findAll(pageable).map(PipelineResponse::fromEntity);
     }
 
     @Transactional(readOnly = true)
