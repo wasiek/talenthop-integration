@@ -3,6 +3,10 @@ package com.github.dziki.talenthop.controller;
 import com.github.dziki.talenthop.dto.SecurityEventResponse;
 import com.github.dziki.talenthop.service.SecurityEventService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +23,9 @@ public class SecurityEventController {
     private final SecurityEventService service;
 
     @GetMapping
-    public ResponseEntity<List<SecurityEventResponse>> findAll() {
-        return ResponseEntity.ok(service.findAll());
+    public ResponseEntity<Page<SecurityEventResponse>> findAll(
+            @PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(service.findAll(pageable));
     }
 
     @GetMapping("/source/{sourceId}")
@@ -42,7 +47,7 @@ public class SecurityEventController {
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> getStats() {
         return ResponseEntity.ok(Map.of(
-                "totalEvents", service.findAll().size(),
+                "totalEvents", service.countAll(),
                 "criticalEvents", service.countBySeverity("CRITICAL"),
                 "highEvents", service.countBySeverity("HIGH"),
                 "mediumEvents", service.countBySeverity("MEDIUM"),

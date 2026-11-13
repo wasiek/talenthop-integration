@@ -56,9 +56,9 @@ class SecurityEventControllerTest {
 
         mockMvc.perform(get("/api/v1/events"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].eventType").value("MALWARE_DETECTED"))
-                .andExpect(jsonPath("$[0].severity").value("CRITICAL"))
-                .andExpect(jsonPath("$[0].isProcessed").value(false));
+                .andExpect(jsonPath("$.content[0].eventType").value("MALWARE_DETECTED"))
+                .andExpect(jsonPath("$.content[0].severity").value("CRITICAL"))
+                .andExpect(jsonPath("$.content[0].isProcessed").value(false));
     }
 
     @Test
@@ -73,8 +73,8 @@ class SecurityEventControllerTest {
 
         mockMvc.perform(get("/api/v1/events"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].eventType").value("INTRUSION"))
-                .andExpect(jsonPath("$[0].severity").value("HIGH"));
+                .andExpect(jsonPath("$.content[0].eventType").value("INTRUSION"))
+                .andExpect(jsonPath("$.content[0].severity").value("HIGH"));
     }
 
     @Test
@@ -181,7 +181,7 @@ class SecurityEventControllerTest {
         // Verify it's now processed
         mockMvc.perform(get("/api/v1/events"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].isProcessed").value(true));
+                .andExpect(jsonPath("$.content[0].isProcessed").value(true));
     }
 
     @Test

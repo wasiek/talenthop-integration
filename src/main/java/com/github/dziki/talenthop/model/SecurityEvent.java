@@ -1,5 +1,6 @@
 package com.github.dziki.talenthop.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -10,10 +11,12 @@ import java.time.Instant;
 @Entity
 @Table(name = "security_events")
 @EntityListeners(AuditingEntityListener.class)
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties("hibernateLazyInitializer")
 public class SecurityEvent {
 
     @Id

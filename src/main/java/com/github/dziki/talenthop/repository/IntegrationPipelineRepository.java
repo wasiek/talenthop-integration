@@ -12,6 +12,8 @@ public interface IntegrationPipelineRepository extends JpaRepository<Integration
 
     Optional<IntegrationPipeline> findByName(String name);
 
+    boolean existsByName(String name);
+
     List<IntegrationPipeline> findBySourceId(Long sourceId);
 
     List<IntegrationPipeline> findByIsActiveTrue();

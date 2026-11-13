@@ -6,6 +6,8 @@ import com.github.dziki.talenthop.model.SecurityEvent;
 import com.github.dziki.talenthop.repository.SecurityEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,34 +29,43 @@ public class SecurityEventService {
         return SecurityEventResponse.fromEntity(saved);
     }
 
-    public List<SecurityEventResponse> findAll() {
-        return repository.findAll().stream()
-                .map(SecurityEventResponse::fromEntity)
-                .collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public Page<SecurityEventResponse> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(SecurityEventResponse::fromEntity);
     }
 
+    @Transactional(readOnly = true)
     public List<SecurityEventResponse> findBySourceId(Long sourceId) {
         return repository.findBySourceIdAndIsProcessedFalse(sourceId).stream()
                 .map(SecurityEventResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<SecurityEventResponse> findBySeverity(String severity) {
         return repository.findBySeverityAndIsProcessedFalse(severity).stream()
                 .map(SecurityEventResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<SecurityEventResponse> findUnprocessedSince(Instant since) {
         return repository.findUnprocessedSince(since).stream()
                 .map(SecurityEventResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public long countAll() {
+        return repository.count();
+    }
+
+    @Transactional(readOnly = true)
     public long countBySourceId(Long sourceId) {
         return repository.countBySourceId(sourceId);
     }
 
+    @Transactional(readOnly = true)
     public long countBySeverity(String severity) {
         return repository.countBySeverity(severity);
     }
