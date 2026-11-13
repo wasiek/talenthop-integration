@@ -24,17 +24,17 @@ public class IntegrationPipeline {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(nullable = false)
+    private Long version;
+
     @Column(nullable = false, unique = true)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "source_id", nullable = false)
-    private IntegrationSource source;
-
     @JsonIgnore
-    public IntegrationSource getSource() {
-        return source;
-    }
+    private IntegrationSource source;
 
     @Column(nullable = false)
     private String transformation;

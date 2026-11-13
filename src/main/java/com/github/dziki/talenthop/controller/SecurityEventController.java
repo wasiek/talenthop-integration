@@ -51,13 +51,14 @@ public class SecurityEventController {
 
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> getStats() {
-        return ResponseEntity.ok(Map.of(
-                "totalEvents", service.countAll(),
-                "criticalEvents", service.countBySeverity("CRITICAL"),
-                "highEvents", service.countBySeverity("HIGH"),
-                "mediumEvents", service.countBySeverity("MEDIUM"),
-                "lowEvents", service.countBySeverity("LOW")
-        ));
+        Map<String, Long> bySeverity = service.countBySeverityGrouped();
+        Map<String, Object> stats = new java.util.HashMap<>();
+        stats.put("totalEvents", service.countAll());
+        stats.put("criticalEvents", bySeverity.getOrDefault("CRITICAL", 0L));
+        stats.put("highEvents", bySeverity.getOrDefault("HIGH", 0L));
+        stats.put("mediumEvents", bySeverity.getOrDefault("MEDIUM", 0L));
+        stats.put("lowEvents", bySeverity.getOrDefault("LOW", 0L));
+        return ResponseEntity.ok(stats);
     }
 
     @PatchMapping("/{id}/process")

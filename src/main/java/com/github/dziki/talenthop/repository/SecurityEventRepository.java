@@ -23,4 +23,7 @@ public interface SecurityEventRepository extends JpaRepository<SecurityEvent, Lo
     long countBySourceId(Long sourceId);
 
     long countBySeverity(String severity);
+
+    @Query("SELECT e.severity as severity, COUNT(e) as cnt FROM SecurityEvent e GROUP BY e.severity")
+    List<Object[]> countGroupBySeverity();
 }

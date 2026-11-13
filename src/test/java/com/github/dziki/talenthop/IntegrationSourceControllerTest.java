@@ -104,7 +104,7 @@ class IntegrationSourceControllerTest {
     @Test
     void getSourceById_notFound() throws Exception {
         mockMvc.perform(get("/api/v1/sources/999"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Source not found: 999"));
     }
 
@@ -144,7 +144,7 @@ class IntegrationSourceControllerTest {
         mockMvc.perform(put("/api/v1/sources/999")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(com.fasterxml.jackson.databind.json.JsonMapper.builder().build().writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Source not found: 999"));
     }
 
@@ -166,7 +166,7 @@ class IntegrationSourceControllerTest {
     @Test
     void findSourceByName_notFound() throws Exception {
         mockMvc.perform(get("/api/v1/sources/name/NonExistent"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Source not found: NonExistent"));
     }
 
@@ -183,13 +183,13 @@ class IntegrationSourceControllerTest {
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/v1/sources/" + source.getId()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
     void deleteSource_notFound() throws Exception {
         mockMvc.perform(delete("/api/v1/sources/999"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Source not found: 999"));
     }
 }

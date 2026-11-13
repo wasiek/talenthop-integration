@@ -1,6 +1,7 @@
 package com.github.dziki.talenthop.service;
 
 import com.github.dziki.talenthop.dto.SecurityEventResponse;
+import com.github.dziki.talenthop.exception.ResourceNotFoundException;
 import com.github.dziki.talenthop.kafka.SecurityEventKafkaProducer;
 import com.github.dziki.talenthop.model.IntegrationSource;
 import com.github.dziki.talenthop.model.SecurityEvent;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -79,10 +81,19 @@ public class SecurityEventService {
         return repository.countBySeverity(severity);
     }
 
+    @Transactional(readOnly = true)
+    public Map<String, Long> countBySeverityGrouped() {
+        Map<String, Long> result = new java.util.HashMap<>();
+        for (Object[] row : repository.countGroupBySeverity()) {
+            result.put((String) row[0], (Long) row[1]);
+        }
+        return result;
+    }
+
     @Transactional
     public void markAsProcessed(Long id) {
         SecurityEvent event = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Event not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Event", id));
         event.setIsProcessed(true);
         event.setProcessedAt(Instant.now());
         repository.save(event);

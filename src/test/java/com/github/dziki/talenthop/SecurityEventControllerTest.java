@@ -192,6 +192,6 @@ class SecurityEventControllerTest {
     @Test
     void markAsProcessed_notFound() throws Exception {
         mockMvc.perform(patch("/api/v1/events/9999/process"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 }

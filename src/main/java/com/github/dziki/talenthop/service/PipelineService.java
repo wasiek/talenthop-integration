@@ -2,6 +2,7 @@ package com.github.dziki.talenthop.service;
 
 import com.github.dziki.talenthop.dto.PipelineRequest;
 import com.github.dziki.talenthop.dto.PipelineResponse;
+import com.github.dziki.talenthop.exception.ResourceNotFoundException;
 import com.github.dziki.talenthop.model.IntegrationPipeline;
 import com.github.dziki.talenthop.model.IntegrationSource;
 import com.github.dziki.talenthop.repository.IntegrationPipelineRepository;
@@ -29,7 +30,7 @@ public class PipelineService {
         }
 
         IntegrationSource source = sourceRepository.findById(request.getSourceId())
-                .orElseThrow(() -> new IllegalArgumentException("Source not found: " + request.getSourceId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Source", request.getSourceId()));
 
         IntegrationPipeline pipeline = IntegrationPipeline.builder()
                 .name(request.getName())
@@ -52,14 +53,14 @@ public class PipelineService {
     @Transactional(readOnly = true)
     public PipelineResponse findById(Long id) {
         IntegrationPipeline pipeline = pipelineRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Pipeline", id));
         return PipelineResponse.fromEntity(pipeline);
     }
 
     @Transactional
     public void delete(Long id) {
         IntegrationPipeline pipeline = pipelineRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Pipeline", id));
         pipelineRepository.delete(pipeline);
         log.info("Deleted pipeline: {} ({})", pipeline.getName(), id);
     }

@@ -116,7 +116,7 @@ class PipelineControllerTest {
     @Test
     void findPipelineById_notFound() throws Exception {
         mockMvc.perform(get("/api/v1/pipelines/999"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Pipeline not found: 999"));
     }
 
@@ -133,6 +133,6 @@ class PipelineControllerTest {
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/v1/pipelines/" + pipeline.getId()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 }

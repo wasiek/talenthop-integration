@@ -2,6 +2,7 @@ package com.github.dziki.talenthop.service;
 
 import com.github.dziki.talenthop.dto.IntegrationSourceRequest;
 import com.github.dziki.talenthop.dto.IntegrationSourceResponse;
+import com.github.dziki.talenthop.exception.ResourceNotFoundException;
 import com.github.dziki.talenthop.model.IntegrationSource;
 import com.github.dziki.talenthop.repository.IntegrationSourceRepository;
 import com.github.dziki.talenthop.repository.SecurityEventRepository;
@@ -50,21 +51,21 @@ public class IntegrationSourceService {
     @Transactional(readOnly = true)
     public IntegrationSourceResponse findById(Long id) {
         IntegrationSource source = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Source not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Source", id));
         return IntegrationSourceResponse.fromEntity(source);
     }
 
     @Transactional(readOnly = true)
     public IntegrationSourceResponse findByName(String name) {
         IntegrationSource source = repository.findByName(name)
-                .orElseThrow(() -> new IllegalArgumentException("Source not found: " + name));
+                .orElseThrow(() -> new ResourceNotFoundException("Source not found: " + name));
         return IntegrationSourceResponse.fromEntity(source);
     }
 
     @Transactional
     public IntegrationSourceResponse update(Long id, IntegrationSourceRequest request) {
         IntegrationSource source = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Source not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Source", id));
 
         // Check for duplicate name (excluding current source)
         repository.findByName(request.getName())
@@ -89,7 +90,7 @@ public class IntegrationSourceService {
     @Transactional
     public void delete(Long id) {
         IntegrationSource source = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Source not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Source", id));
 
         long eventCount = eventRepository.countBySourceId(id);
         if (eventCount > 0) {
