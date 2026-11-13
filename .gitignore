@@ -33,3 +33,6 @@ Thumbs.db
 
 # GitHub Actions (requires workflow scope)
 .github/
+
+# GitHub Actions (requires workflow scope)
+.github/
